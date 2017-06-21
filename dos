@@ -1,7 +1,16 @@
 #!/bin/bash
-#
-#
-#Variable declaration
+##########################################################
+#							 #
+#           dos 1.0, Smart domain whois retriever        #
+#	    https://github.com/ne0anders0n/scripts	 #
+##########################################################
+
+
+
+##########################################################
+#		Variable declaration			 #
+##########################################################
+
 DOMINFO=$(echo /tmp/$USER.gargbage1.$(date +%Y-%m-%d-%H-%M))
 REGINFO=$(echo /tmp/$USER.gargbage2.$(date +%Y-%m-%d-%H-%M))
 ADMININFO=$(echo /tmp/$USER.gargbage3.$(date +%Y-%m-%d-%H-%M))
@@ -14,7 +23,9 @@ red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
 
-# Functions
+##########################################################
+# 			Functions			 #
+##########################################################
 
 trashit ()
 {
@@ -141,9 +152,12 @@ esac
 done
 trashit
 }
-#######################################################
-# From here code below, do not edit it !!
-######################################################
+
+##########################################################
+#                                                        #
+#               	Main Code			 #
+#							 #
+##########################################################
 
 if [ $# -eq 0 ]
   then
@@ -239,3 +253,4 @@ checkopt "$@"
 fi
 trashit
 done
+
