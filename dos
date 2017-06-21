@@ -1,0 +1,239 @@
+#!/bin/bash
+
+#Variable declaration
+DOMINFO=$(echo /tmp/$USER.gargbage1.$(date +%Y-%m-%d-%H-%M))
+REGINFO=$(echo /tmp/$USER.gargbage2.$(date +%Y-%m-%d-%H-%M))
+ADMININFO=$(echo /tmp/$USER.gargbage3.$(date +%Y-%m-%d-%H-%M))
+TECHINFO=$(echo /tmp/$USER.gargbage4.$(date +%Y-%m-%d-%H-%M))
+garbage1=$(echo /tmp/$USER.garbage1.$(date +%Y-%m-%d-%H-%M))
+garbage2=$(echo /tmp/$USER.garbage2.$(date +%Y-%m-%d-%H-%M))
+garbage3=$(echo /tmp/$USER.garbage3.$(date +%Y-%m-%d-%H-%M))
+
+red=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
+# Functions
+
+trashit ()
+{
+
+if [ -f $garbage1 ]
+then
+rm $garbage1
+fi
+
+if [ -f $garbage2 ]
+then
+rm $garbage2
+fi
+
+if [ -f $garbage3 ]
+then
+rm $garbage3
+fi
+
+if [ -f $DOMINFO ]
+then
+rm $DOMINFO
+fi
+
+if [ -f $REGINFO ]
+then
+rm $REGINFO
+fi
+
+if [ -f $ADMININFO ]
+then
+rm $ADMININFO
+fi
+
+if [ -f $TECHINFO ]
+then
+rm $TECHINFO
+fi
+
+
+}
+
+printhelp ()
+{
+
+printf "
+dos 1.0, Smart domain whois retriever
+Usage: vminfo [OPTION]...[Fully Qualified Domain Name]......
+
+Options:
+
+  -r,  display registrar information.
+  -a,  display admin information.
+  -t,  display tech information.
+  -A,  display all the information.
+
+Mail bug reports and suggestions to <anand>.
+"
+trashit
+exit
+}
+
+
+checkopt ()
+{
+
+local OPTIND
+OPTIND=1
+
+while getopts "r,a,t,A" opt; do
+
+
+if [ "$opt" = "?" ]
+then
+printf "
+${red}ERROR: Invalid option: -$OPTARG !!!${reset}
+" >&2
+printhelp
+trashit
+        exit
+    fi
+done
+
+OPTIND=1
+
+while getopts "r,a,t,A" opt
+do
+VAR1=1
+done
+
+if [ $OPTIND -eq 1 ]
+then
+
+cat $DOMINFO
+fi
+
+OPTIND=1
+
+while getopts "r,a,t,A" opt; do
+
+  case $opt in
+	
+    r)
+    cat $REGINFO
+    ;;
+
+    a)
+    cat $ADMININFO
+    ;;
+
+    t)
+    cat $TECHINFO
+    ;;
+
+    A)
+    cat $DOMINFO
+    cat $REGINFO
+    cat $ADMININFO
+    cat $TECHINFO
+
+    ;;
+esac
+done
+trashit
+}
+#######################################################
+# From here code below, do not edit it !!
+######################################################
+
+if [ $# -eq 0 ]
+  then
+echo $#
+printhelp
+fi
+
+COUNTER=0
+for name in "$@"
+do
+
+DOM=$(echo $name|sed -n '/^-/!p'|wc -l)
+
+if [ $DOM -ne 0 ]
+then
+COUNTER=$[$COUNTER +1]
+fi
+done
+
+
+if [ $COUNTER -eq 0 ]
+  then
+printhelp
+trashit
+exit
+fi
+
+
+for name in "$@"
+do
+
+DOM=$(echo $name|sed -n '/^-/!p'|wc -l)
+
+if [ $DOM -ne 0 ]
+then
+whois $name > $garbage1
+sed -i 's/^[ \t]*//' $garbage1
+dig +short $name > $garbage3
+
+cat $garbage3 |\
+while read line
+do
+sed -i "/Domain Name:/a IP Address: $line" $garbage1
+done
+
+printf "
+#######################
+
+# Domain Information: #
+
+#######################
+
+" >> $DOMINFO
+
+cat $garbage1 |sed -n '/^for detailed information./,/^>>> Last/p;/^>>> Last/q'|sed '/^for detailed information./d'|sed '/^>>> Last/d'|sed -n '/Domain Name:/,/^>>> Last/p;/^>>> Last/q' >> $DOMINFO
+
+printf "
+#################################
+
+# Domain Registrar Information: #
+
+#################################
+
+" >> $REGINFO
+
+cat $garbage1 |sed -n '/^Registrars./,/^Registry Admin ID/p;/^Registry Admin ID/q'|sed '/^Registrars./d'|sed '/^Registry Admin ID/d' >> $REGINFO
+
+echo ""  >> $REGINFO
+
+printf "
+###########################
+
+# Domain Tech Information #
+
+###########################
+
+" >> $TECHINFO
+
+cat $garbage1 |sed -n '/^Registry Tech ID:/,/^URL of the ICANN WHOIS/p;/^URL of the ICANN WHOIS/q'|sed '/^URL of the ICANN WHOIS/d' >> $TECHINFO
+
+printf "
+############################
+
+# Domain Admin Information #
+
+############################
+
+" >> $ADMININFO
+
+cat $garbage1 |sed -n '/^Registry Admin ID:/,/^Registry Tech ID:/p;/^Registry Tech ID:/q'|sed '/^Registry Tech ID:/d' >> $ADMININFO
+
+checkopt "$@"
+fi
+trashit
+done
