@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+#
 #Variable declaration
 DOMINFO=$(echo /tmp/$USER.gargbage1.$(date +%Y-%m-%d-%H-%M))
 REGINFO=$(echo /tmp/$USER.gargbage2.$(date +%Y-%m-%d-%H-%M))
